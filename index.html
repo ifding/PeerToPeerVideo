@@ -130,7 +130,7 @@
 				// Q4: add remote video track and add audio and video
 				remoteVideo.srcObject = new MediaStream([audioTracks[0], videoTracks[0]]);
 				// Q4: add remove screen sharing track
-				remoteVideo.srcObject = new MediaStream([videoTracks[1]]);
+				removeScreen.srcObject = new MediaStream([videoTracks[1]]);
 				console.log('remote peer connection received remote stream')
 			}
 
