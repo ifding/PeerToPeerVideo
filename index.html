@@ -14,7 +14,9 @@
 	<body>
 
 		<video id="localVideo" autoplay playsinline></video>
+		<video id="localScreen" autoplay playsinline></video>
 		<video id="remoteVideo" autoplay playsinline></video>
+		<video id="removeScreen" autoplay playsinline></video>
 
 		<div>
 			<p>
@@ -33,13 +35,18 @@
 
 		<script type="text/javascript">
 			'use strict';
-
-			const mediaStreamConstraints = {video: true};
-			const offerOptions = {offerToReceiveVideo:1};
+            // Q1: add the audio member
+			const mediaStreamConstraints = {audio: true, video: true};
+			// Q1: update the offerOptions
+			const offerOptions = {offerToReceiveVideo:1, offerToReceiveAudio:1};
 			const servers = {'iceServers': [{'url': 'stun:stun.l.google.com:19302'}]};
 
 			const localVideo = document.getElementById('localVideo');
 			const remoteVideo = document.getElementById('remoteVideo');
+
+			// Q2: get element for screen sharing
+			const localScreen = document.getElementById('localScreen');
+			const remoteScreen = document.getElementById('removeScreen');
 
 			const localOffer = document.getElementById('localOffer');
 			const remoteOffer = document.getElementById('remoteOffer');
@@ -71,6 +78,20 @@
 				.then((mediaStream) => {
 				
 					localVideo.srcObject = mediaStream;
+					localVideo.muted = true;
+
+					for (const track of mediaStream.getTracks())
+						peerMediaStream.addTrack(track);
+					}
+				)
+				.catch(logError);
+
+			// Q2: get the screen media stream
+			navigator.mediaDevices.getDisplayMedia(mediaStreamConstraints)
+				.then((mediaStream) => {
+
+					localScreen.srcObject = mediaStream;
+					localScreen.muted = true;
 
 					for (const track of mediaStream.getTracks())
 						peerMediaStream.addTrack(track);
@@ -103,7 +124,13 @@
 			function gotRemoteMediaStream(event) {
 
 				const mediaStream = event.stream;
-				remoteVideo.srcObject = mediaStream;
+				const audioTracks = mediaStream.getAudioTracks();
+				const videoTracks = mediaStream.getVideoTracks();
+
+				// Q4: add remote video track and add audio and video
+				remoteVideo.srcObject = new MediaStream([audioTracks[0], videoTracks[0]]);
+				// Q4: add remove screen sharing track
+				remoteVideo.srcObject = new MediaStream([videoTracks[1]]);
 				console.log('remote peer connection received remote stream')
 			}
 
